@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank Statement Reader</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="app">
+        <header class="header">
+            <div class="header-content">
+                <h1>Where is my money going?</h1>
+            </div>
+        </header>
+
+        <main class="main">
+            <!-- Upload Section (shown as floating button when data exists) -->
+            <section class="upload-section" id="uploadSection">
+                <div class="upload-box" id="uploadBox">
+                    <div class="upload-icon">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                    </div>
+                    <h3>Drop your PDF here</h3>
+                    <p>or click to browse to add your first statement</p>
+                    <input type="file" id="fileInput" accept=".pdf" hidden>
+                </div>
+            </section>
+
+            <!-- Stats Section -->
+            <section class="stats-section hidden" id="statsSection">
+                <div class="stat-card income">
+                    <div class="stat-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="19" x2="12" y2="5"></line>
+                            <polyline points="5 12 12 5 19 12"></polyline>
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Total Income</span>
+                        <span class="stat-value" id="totalIncome">0.00</span>
+                    </div>
+                </div>
+                <div class="stat-card expense">
+                    <div class="stat-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <polyline points="19 12 12 19 5 12"></polyline>
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Total Expenses</span>
+                        <span class="stat-value" id="totalExpenses">0.00</span>
+                    </div>
+                </div>
+                <div class="stat-card balance">
+                    <div class="stat-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="16"></line>
+                            <line x1="8" y1="12" x2="16" y2="12"></line>
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Net Balance</span>
+                        <span class="stat-value" id="netBalance">0.00</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Monthly Summary Section -->
+            <section class="monthly-section hidden" id="monthlySection">
+                <div class="monthly-header">
+                    <h2>Monthly Overview</h2>
+                </div>
+                <div class="monthly-cards" id="monthlyCards">
+                    <!-- Monthly cards will be inserted here -->
+                </div>
+            </section>
+
+            <!-- Chart Section -->
+            <section class="chart-section hidden" id="chartSection">
+                <div class="chart-container">
+                    <h3>Spending by Category</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                    <div class="chart-legend" id="chartLegend"></div>
+                </div>
+            </section>
+
+            <!-- Filter Section -->
+            <section class="filter-section hidden" id="filterSection">
+                <div class="filter-group">
+                    <input type="text" id="searchInput" placeholder="Search transactions..." class="search-input">
+                </div>
+                <div class="filter-group">
+                    <select id="monthFilter" class="filter-select">
+                        <option value="all">All Months</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <select id="typeFilter" class="filter-select">
+                        <option value="all">All Types</option>
+                        <option value="expense">Expenses Only</option>
+                        <option value="income">Income Only</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <select id="categoryFilter" class="filter-select">
+                        <option value="all">All Categories</option>
+                        <option value="uncategorized">Uncategorized</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" id="newUploadBtn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    Add Statement
+                </button>
+            </section>
+
+            <!-- Transactions List -->
+            <section class="transactions-section hidden" id="transactionsSection">
+                <div class="transactions-header">
+                    <h2>Transactions</h2>
+                    <span class="transaction-count" id="transactionCount">0 transactions</span>
+                </div>
+                <div class="transactions-list" id="transactionsList">
+                    <!-- Transactions will be inserted here -->
+                </div>
+            </section>
+        </main>
+
+        <!-- Category Modal -->
+        <div class="modal hidden" id="categoryModal">
+            <div class="modal-backdrop"></div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Set Category</h3>
+                    <button class="modal-close" id="modalClose">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="category-grid" id="categoryGrid">
+                        <!-- Categories will be inserted here -->
+                    </div>
+                    <div class="custom-category">
+                        <input type="text" id="customCategoryInput" placeholder="Or type a custom category...">
+                        <button class="btn btn-primary" id="saveCustomCategory">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div class="loading-overlay hidden" id="loadingOverlay">
+            <div class="spinner"></div>
+            <p>Processing your statement...</p>
+        </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
